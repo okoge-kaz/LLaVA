@@ -787,9 +787,18 @@ def make_supervised_data_module(tokenizer: transformers.PreTrainedTokenizer,
 
 def train(attn_implementation=None):
     global local_rank
+    if os.environ.get("USE_MPI", 0):
+        global_rank = int(os.getenv('OMPI_COMM_WORLD_RANK', 0))
+        local_rank = int(os.getenv('OMPI_COMM_WORLD_LOCAL_RANK', 0))
+        world_size = int(os.getenv('OMPI_COMM_WORLD_SIZE', 1))
+
+        os.environ['RANK'] = str(global_rank)
+        os.environ['LOCAL_RANK'] = str(local_rank)
+        os.environ['WORLD_SIZE'] = str(world_size)
 
     parser = transformers.HfArgumentParser(
-        (ModelArguments, DataArguments, TrainingArguments))
+        dataclass_types=(ModelArguments, DataArguments, TrainingArguments)  # type: ignore
+    )
     model_args, data_args, training_args = parser.parse_args_into_dataclasses()
     local_rank = training_args.local_rank
     compute_dtype = (torch.float16 if training_args.fp16 else (torch.bfloat16 if training_args.bf16 else torch.float32))
@@ -912,7 +921,7 @@ def train(attn_implementation=None):
             model_args=model_args,
             fsdp=training_args.fsdp
         )
-        
+
         vision_tower = model.get_vision_tower()
         vision_tower.to(dtype=torch.bfloat16 if training_args.bf16 else torch.float16, device=training_args.device)
 

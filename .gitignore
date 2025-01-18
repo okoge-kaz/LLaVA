@@ -1,3 +1,8 @@
+# training
+outputs
+wandb
+hostfile
+
 # Python
 __pycache__
 *.pyc

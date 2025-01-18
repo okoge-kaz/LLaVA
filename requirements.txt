@@ -1,7 +1,9 @@
 transformers
 tokenizers
+
 sentencepiece
 shortuuid
+
 accelerate
 peft
 bitsandbytes
@@ -14,3 +16,5 @@ scikit-learn
 deepspeed
 ninja
 wandb
+
+mpi4py
